@@ -1,4 +1,3 @@
-import 'package:uber_driver_app/features/uber_auth_feature/domain/entities/vehicle_entity.dart';
 
 abstract class UberAuthRepository {
   Future<bool> uberAuthIsSignIn();
@@ -8,5 +7,5 @@ abstract class UberAuthRepository {
   Future<bool> uberAuthCheckUserStatus(String docId);
   Future<void> uberAuthSignOut();
   Future<String> uberAddProfileImg(String driverId);
-  Future<void>uberAddVehicleDetails(VehicleEntity vehicleEntity);
+
 }

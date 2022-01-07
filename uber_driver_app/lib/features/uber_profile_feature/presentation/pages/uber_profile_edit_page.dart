@@ -162,18 +162,7 @@ class _UberProfileEditPageState extends State<UberProfileEditPage> {
                               const SizedBox(
                                 height: 15,
                               ),
-                              const Text(
-                                "Total Trips",
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w400,
-                                    fontSize: 15,
-                                    color: Colors.grey),
-                              ),
-                              const SizedBox(
-                                height: 15,
-                              ),
-                              Text(widget.uberProfileController
-                                  .driverData.value['email']??0)
+
                             ],
                           ),
                         )

@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import 'package:uber_driver_app/features/uber_auth_feature/domain/entities/driver_entity.dart';
+import 'package:uber_driver_app/features/uber_profile_feature/domain/entities/driver_entity.dart';
 import 'package:uber_driver_app/features/uber_auth_feature/domain/use_cases/uber_add_profile_image_usecase.dart';
 import 'package:uber_driver_app/features/uber_auth_feature/domain/use_cases/uber_auth_get_user_uid_usecase.dart';
 import 'package:uber_driver_app/features/uber_auth_feature/domain/use_cases/uber_auth_sign_out_usecase.dart';
@@ -17,6 +17,7 @@ class UberProfileController extends GetxController {
 
   var driverData = {}.obs;
   var isLoaded = false.obs;
+  late DriverEntity driverEntity;
 
   UberProfileController(
       {required this.uberProfileGetRiderProfileUsecase,
@@ -30,11 +31,14 @@ class UberProfileController extends GetxController {
     String driverId = await uberAuthGetUserUidUseCase.call();
     final driverProfileData = uberProfileGetRiderProfileUsecase.call(driverId);
     driverProfileData.listen((data) {
+      driverEntity=data;
       driverData['name'] = data.name;
       driverData['mobile'] = data.mobile;
       driverData['email'] = data.email;
       driverData['profile_img'] = data.profile_img;
       driverData['wallet'] = data.wallet;
+      driverData['overall_rating'] = data.overall_rating;
+      driverData['city']= data.city;
       isLoaded.value = true;
     });
   }
@@ -47,15 +51,22 @@ class UberProfileController extends GetxController {
   }
 
   updateDriverProfile(String name, String email) async {
-    final riderEntity = DriverEntity(
+    final driver = DriverEntity(
         name:name,
         email:email,
-        mobile:driverData.value['mobile'],
-        profile_img:driverData['profile_img'],
-        total_trips:driverData['total_trips'],
-        wallet:driverData.value['wallet']);
+      profile_img: driverData['profile_img'],
+      mobile: driverEntity.mobile,
+      wallet: driverEntity.wallet,
+      current_location: driverEntity.current_location,
+      driver_id: driverEntity.driver_id,
+      is_online: driverEntity.is_online,
+      overall_rating: driverEntity.overall_rating,
+      vehicle: driverEntity.vehicle,
+      city: driverEntity.city
+
+    );
     String driverId = await uberAuthGetUserUidUseCase.call();
-    await uberProfileUpdateDriverUsecase.call(riderEntity, driverId);
+    await uberProfileUpdateDriverUsecase.call(driver, driverId);
     Get.snackbar("Done", "Profile Updated!");
   }
 

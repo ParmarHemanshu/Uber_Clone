@@ -87,4 +87,5 @@ class UberAuthDataSourceImpl extends UberAuthDataSource {
         .ref('UserProfileImages/$driverId')
         .getDownloadURL();
   }
+
 }

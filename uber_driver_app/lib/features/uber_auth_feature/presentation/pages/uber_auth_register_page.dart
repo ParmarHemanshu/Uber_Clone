@@ -4,7 +4,7 @@ import 'package:get/get_instance/src/extension_instance.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:get/get_utils/get_utils.dart';
 import 'package:uber_driver_app/features/uber_auth_feature/presentation/getx/auth_controller.dart';
-import 'package:uber_driver_app/features/uber_auth_feature/presentation/widgets/uber_auth_register_textfield_widget.dart';
+import 'package:uber_driver_app/features/uber_auth_feature/presentation/widgets/uber_auth_register_page_body_widget.dart';
 
 class UberAuthRegistrationPage extends StatefulWidget {
   const UberAuthRegistrationPage({Key? key}) : super(key: key);
@@ -15,7 +15,7 @@ class UberAuthRegistrationPage extends StatefulWidget {
 }
 
 class _UberAuthRegistrationPageState extends State<UberAuthRegistrationPage> {
-  int selected_vehicle=1;
+  int selected_vehicle = 1;
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController cityController = TextEditingController();
@@ -76,64 +76,81 @@ class _UberAuthRegistrationPageState extends State<UberAuthRegistrationPage> {
                         ))
                   ],
                 ),
-                buildStaticRegisterPageBody(
-                    nameController, emailController,cityController,companyController,modelController,numberPlateController),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Row(
-                      children: [
-                        Radio(
-                          value: 1,
-                          groupValue: selected_vehicle,
-                          onChanged: (value) {
-                            setState(() {
-                           selected_vehicle=1;
-                            });
-                          },
-                        ),
-                        const SizedBox(
-                          width: 10,
-                        ),
-                        Image.asset("assets/bike.png",scale: 8,)
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        Radio(
-                          value: 2,
-                          groupValue: selected_vehicle,
-                          onChanged: (value) {
-                            setState(() {
-                            selected_vehicle=2;
-                            });
-                          },
-                        ),
-                        const SizedBox(
-                          width: 10,
-                        ),
-                        Image.asset("assets/auto.png",scale: 5,)
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        Radio(
-                          value: 3,
-                          groupValue: selected_vehicle,
-                          onChanged: (value) {
-                            setState(() {
-                              selected_vehicle=3;
-                            });
-                          },
-                        ),
-                        const SizedBox(
-                          width: 10,
-                        ),
-                          Image.asset("assets/car.png",scale: 22,)
-                      ],
-                    ),
-                  ],
+                uberRegisterPageBody(
+                    nameController,
+                    emailController,
+                    cityController,
+                    companyController,
+                    modelController,
+                    numberPlateController),
+                Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Row(
+                        children: [
+                          Radio(
+                            value: 1,
+                            groupValue: selected_vehicle,
+                            onChanged: (value) {
+                              setState(() {
+                                selected_vehicle = 1;
+                              });
+                            },
+                          ),
+                          const SizedBox(
+                            width: 10,
+                          ),
+                          Image.asset(
+                            "assets/bike.png",
+                            scale: 8,
+                          )
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          Radio(
+                            value: 2,
+                            groupValue: selected_vehicle,
+                            onChanged: (value) {
+                              setState(() {
+                                selected_vehicle = 2;
+                              });
+                            },
+                          ),
+                          const SizedBox(
+                            width: 10,
+                          ),
+                          Image.asset(
+                            "assets/auto.png",
+                            scale: 5,
+                          )
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          Radio(
+                            value: 3,
+                            groupValue: selected_vehicle,
+                            onChanged: (value) {
+                              setState(() {
+                                selected_vehicle = 3;
+                              });
+                            },
+                          ),
+                          const SizedBox(
+                            width: 10,
+                          ),
+                          Image.asset(
+                            "assets/car.png",
+                            scale: 22,
+                          )
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
                 SizedBox(
                   width: double.infinity,
@@ -142,16 +159,15 @@ class _UberAuthRegistrationPageState extends State<UberAuthRegistrationPage> {
                       if (nameController.text.isNotEmpty &&
                           emailController.text.isNotEmpty &&
                           GetUtils.isEmail(emailController.text)) {
-                        print("profile uploaded");
                         _uberAuthController.addDriverProfile(
-                          nameController.text,
-                          emailController.text,
-                          cityController.text.trim(),
-                          selected_vehicle,
-                          companyController.text.trim(),
-                          modelController.text.trim(),
-                          numberPlateController.text.trim()
-                        );
+                            nameController.text.trim(),
+                            emailController.text.trim(),
+                            cityController.text.trim(),
+                            selected_vehicle,
+                            companyController.text.trim(),
+                            modelController.text.trim(),
+                            numberPlateController.text.trim(),
+                            context);
                       } else {
                         Get.snackbar("error", "invalid values!");
                       }
@@ -186,76 +202,4 @@ class _UberAuthRegistrationPageState extends State<UberAuthRegistrationPage> {
       ),
     );
   }
-}
-
-Widget buildStaticRegisterPageBody(TextEditingController name,
-    TextEditingController email,TextEditingController city,TextEditingController company,TextEditingController model,TextEditingController number_plate) {
-  return Column(
-    children: [
-      Container(
-        padding: const EdgeInsets.all(10.0),
-        child: const Text(
-          "Let's start with creating your account",
-          style: TextStyle(fontSize: 25, fontWeight: FontWeight.w400),
-        ),
-      ),
-      TextFieldWidget(
-        labelText: 'Full Name*',
-        textType: 'Enter your name',
-        inputType: TextInputType.text,
-        controller: name,
-      ),
-      //Spacer(),
-      const SizedBox(
-        height: 10,
-      ),
-      TextFieldWidget(
-        labelText: 'Email Address',
-        textType: 'Enter your email',
-        inputType: TextInputType.emailAddress,
-        controller: email,
-      ),
-      const SizedBox(
-        height: 10,
-      ),
-      TextFieldWidget(
-        labelText: 'City*',
-        textType: 'Enter your current city',
-        inputType: TextInputType.text,
-        controller: city,
-      ),
-      const SizedBox(
-        height: 10,
-      ),
-      TextFieldWidget(
-        labelText: 'Vehicle Company*',
-        textType: 'Enter Company name',
-        inputType: TextInputType.text,
-        controller: company,
-      ),
-      const SizedBox(
-        height: 10,
-      ),
-      TextFieldWidget(
-        labelText: 'Vehicle Model*',
-        textType: 'Enter your vehicle model name',
-        inputType: TextInputType.text,
-        controller: model,
-      ),
-      const SizedBox(
-        height: 10,
-      ),
-      TextFieldWidget(
-        labelText: 'Number Plate*',
-        textType: 'Enter your vehicle Number plate',
-        inputType: TextInputType.text,
-        controller: number_plate
-        ,
-      ),
-      const SizedBox(
-        height: 20,
-      ),
-
-    ],
-  );
 }

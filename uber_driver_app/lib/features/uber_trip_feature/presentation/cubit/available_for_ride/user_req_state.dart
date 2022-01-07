@@ -23,7 +23,7 @@ class UserReqLoading extends UserReqState{
 
 
 class UserReqLoaded extends UserReqState{
-  final List<TripDriver> tripHistoryList;
+  final List<TripEntity> tripHistoryList;
   UserReqLoaded({required this.tripHistoryList});
 
   @override
@@ -32,8 +32,8 @@ class UserReqLoaded extends UserReqState{
 }
 
 class UserReqDisplayOne extends UserReqState{
-  final TripDriver tripDriver;
-  UserReqDisplayOne({required this.tripDriver});
+  final TripEntity tripDriver;
+  const UserReqDisplayOne({required this.tripDriver});
 
   @override
   // TODO: implement props

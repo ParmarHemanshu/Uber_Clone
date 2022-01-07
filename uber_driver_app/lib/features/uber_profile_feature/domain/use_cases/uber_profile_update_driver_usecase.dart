@@ -1,5 +1,5 @@
 
-import 'package:uber_driver_app/features/uber_auth_feature/domain/entities/driver_entity.dart';
+import 'package:uber_driver_app/features/uber_profile_feature/domain/entities/driver_entity.dart';
 import 'package:uber_driver_app/features/uber_profile_feature/domain/repositories/uber_profile_repository.dart';
 
 class UberProfileUpdateDriverUsecase {

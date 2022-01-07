@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'package:get/get.dart';
@@ -6,7 +7,8 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_instance/src/extension_instance.dart';
 import 'package:uber_driver_app/features/uber_profile_feature/presentation/getx/uber_profile_controller.dart';
 import 'package:uber_driver_app/features/uber_profile_feature/presentation/pages/uber_profile_edit_page.dart';
-import 'package:uber_driver_app/features/uber_trips_history_feature/presentation/pages/uber_trips_history_page.dart';
+import 'package:uber_driver_app/features/uber_trips_history_feature/presentation/cubit/trip_history_cubit.dart';
+import 'package:uber_driver_app/features/uber_trips_history_feature/presentation/pages/trip_history_page.dart';
 
 import '/injection_container.dart' as di;
 
@@ -57,7 +59,7 @@ class _UberProfilePageState extends State<UberProfilePage> {
                     ? Text(
                         _uberProfileController.driverData.value['name']
                             .toString(),
-                        style: const TextStyle(fontSize: 35),
+                        style: const TextStyle(fontSize: 30),
                       )
                     : const Text("Loading Profile..."),
                 trailing: GestureDetector(
@@ -73,13 +75,14 @@ class _UberProfilePageState extends State<UberProfilePage> {
                   ),
                 ),
                 subtitle: Row(
-                  children: const [
-                    FaIcon(
+                  children:  [
+                    const FaIcon(
                       FontAwesomeIcons.solidStar,
                       size: 12,
+                      color: Colors.black45,
                     ),
                     Text(
-                      " 5.0",
+                    _uberProfileController.driverData.value["overall_rating"].toString() ,
                       style: TextStyle(fontWeight: FontWeight.w600),
                     )
                   ],
@@ -136,7 +139,15 @@ class _UberProfilePageState extends State<UberProfilePage> {
                       ),
                       GestureDetector(
                         onTap: () {
-                          Get.to(() => const TripHistory());
+                          Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => BlocProvider<TripHistoryCubit>(
+                                  create: (BuildContext context) =>
+                                      di.sl<TripHistoryCubit>(),
+                                  child: const TripHistory()
+                                ),
+                              ));
                         },
                         child: Container(
                           padding: const EdgeInsets.all(22),
@@ -177,24 +188,10 @@ class _UberProfilePageState extends State<UberProfilePage> {
                                 fontWeight: FontWeight.w500, fontSize: 18),
                           ),
                           Text(
-                              "₹${_uberProfileController.driverData.value['wallet'].toString()}",
+                              "₹${_uberProfileController.driverData.value['wallet']}",
                               style: const TextStyle(
                                   fontWeight: FontWeight.w700, fontSize: 22)),
-                          GestureDetector(
-                            onTap: () {
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.all(5),
-                              decoration: BoxDecoration(
-                                  borderRadius: const BorderRadius.all(
-                                      Radius.circular(12)),
-                                  color: Colors.grey[200]),
-                              child: const Text("₹",
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 16)),
-                            ),
-                          )
+
                         ],
                       ),
                     ),

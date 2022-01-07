@@ -40,9 +40,5 @@ class UberAuthRepositoryImpl extends UberAuthRepository {
     return await uberAuthDataSource.uberAddProfileImg(driverId);
   }
 
-  @override
-  Future<void> uberAddVehicleDetails(vehicleEntity) {
-    // TODO: implement uberAddVehicleDetails
-    throw UnimplementedError();
-  }
+
 }

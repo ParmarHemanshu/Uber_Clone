@@ -3,15 +3,16 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:get_it/get_it.dart';
+import 'package:uber_driver_app/features/uber_profile_feature/domain/use_cases/uber_profile_upload_vehicle_data_usecase.dart';
 import 'package:uber_driver_app/features/uber_profile_feature/presentation/getx/uber_profile_controller.dart';
 import 'package:uber_driver_app/features/uber_trip_feature/presentation/controller/driver_location/driver_location_controller.dart';
 import 'package:uber_driver_app/features/uber_trip_feature/presentation/cubit/available_for_ride/user_req_cubit.dart';
 import 'package:uber_driver_app/features/uber_trip_feature/presentation/cubit/driver_live_location/driver_location_cubit.dart';
-import 'package:uber_driver_app/features/uber_trips_history_feature/data/repositories/uber_trips_history_repository_impl.dart';
-import 'package:uber_driver_app/features/uber_trips_history_feature/domain/repositories/uber_trips_history_repository.dart';
-import 'package:uber_driver_app/features/uber_trips_history_feature/domain/use_cases/uber_get_trip_history_usecase.dart';
-import 'package:uber_driver_app/features/uber_trips_history_feature/presentation/getx/uber_trip_history_controller.dart';
-
+import 'package:uber_driver_app/features/uber_trip_feature/presentation/cubit/uber_driver_map/uber_map_cubit.dart';
+import 'package:uber_driver_app/features/uber_trips_history_feature/presentation/cubit/trip_history_cubit.dart';
+import 'core/data_sources/remote_data_source/firebase/firebase_data_source.dart';
+import 'core/data_sources/remote_data_source/firebase/firebase_data_source_impl.dart';
+import 'core/internet/internet_cubit.dart';
 import 'features/uber_auth_feature/data/data_sources/uber_auth_data_source.dart';
 import 'features/uber_auth_feature/data/data_sources/uber_auth_data_source_impl.dart';
 import 'features/uber_auth_feature/data/repositories/uber_auth_repository_impl.dart';
@@ -30,23 +31,20 @@ import 'features/uber_profile_feature/data/repositories/uber_profile_repository_
 import 'features/uber_profile_feature/domain/repositories/uber_profile_repository.dart';
 import 'features/uber_profile_feature/domain/use_cases/uber_profile_get_driver_usecase.dart';
 import 'features/uber_profile_feature/domain/use_cases/uber_profile_update_driver_usecase.dart';
-import 'features/uber_trip_feature/data/data_sources/common/firebase_data_source.dart';
-import 'features/uber_trip_feature/data/data_sources/common/firebase_data_source_impl.dart';
-import 'features/uber_trip_feature/data/repositories/driver_location/driver_location_repository_impl.dart';
-import 'features/uber_trip_feature/data/repositories/trip_history/trip_history_repository_impl.dart';
-import 'features/uber_trip_feature/domain/repositories/driver_location/driver_location_repository.dart';
-import 'features/uber_trip_feature/domain/repositories/trip_history/trip_history_repository.dart';
-import 'features/uber_trip_feature/domain/use_cases/driver_location/driver_location_usecase.dart';
-import 'features/uber_trip_feature/domain/use_cases/trip_history/driver_update_usecase.dart';
-import 'features/uber_trip_feature/domain/use_cases/trip_history/trip_history_usecase.dart';
-import 'features/uber_trip_feature/presentation/cubit/internet/internet_cubit.dart';
-import 'features/uber_trips_history_feature/data/data_sources/uber_trips_history_data_source.dart';
-import 'features/uber_trips_history_feature/data/data_sources/uber_trips_history_data_source_impl.dart';
+import 'features/uber_trip_feature/data/repositories/driver_location_repository_impl.dart';
+import 'features/uber_trip_feature/domain/repositories/driver_location_repository.dart';
+import 'features/uber_trip_feature/domain/use_cases/driver_location_usecase.dart';
+import 'features/uber_trip_feature/domain/use_cases/driver_update_usecase.dart';
+import 'features/uber_trips_history_feature/data/repositories/trip_history_repository_impl.dart';
+import 'features/uber_trips_history_feature/domain/repositories/trip_history_repository.dart';
+import 'features/uber_trips_history_feature/domain/use_cases/get_trip_history_usecase.dart';
 
 final sl = GetIt.instance;
 
 Future<void> init() async {
-  // Cubit
+  //////////////////////////////////////////////////////////////////
+  ////////////////////// Cubits ///////////////////////////////////
+  //////////////////////////////////////////////////////////////////
 
   sl.registerFactory(
     () => UserReqCubit(
@@ -57,7 +55,16 @@ Future<void> init() async {
   );
 
   sl.registerFactory(
+    () => TripHistoryCubit(
+      tripHistoryUseCase: sl.call(),
+      getUserUidUseCase: sl.call(),
+    ),
+  );
+  sl.registerFactory(
     () => InternetCubit(connectivity: sl.call()),
+  );
+  sl.registerFactory(
+    () => UberMapCubit(),
   );
 
   sl.registerFactory(
@@ -65,7 +72,9 @@ Future<void> init() async {
         driverLocationUseCase: sl.call(), getUserUidUseCase: sl.call()),
   );
 
-  // GetX
+  //////////////////////////////////////////////////////////////////
+  ////////////////////// GetX Controllers //////////////////////////
+  //////////////////////////////////////////////////////////////////
 
   sl.registerFactory<UberAuthController>(() => UberAuthController(
       uberAuthIsSignInUseCase: sl.call(),
@@ -74,16 +83,11 @@ Future<void> init() async {
       uberAuthCheckUserStatusUseCase: sl.call(),
       uberAuthGetUserUidUseCase: sl.call(),
       uberProfileUpdateDriverUsecase: sl.call(),
-      uberAddProfileImgUseCase: sl.call()));
-
-  sl.registerFactory<UberTripsHistoryController>(() =>
-      UberTripsHistoryController(
-          uberGetTripHistoryUsecase: sl.call(),
-          uberAuthGetUserUidUseCase: sl.call()));
+      uberAddProfileImgUseCase: sl.call(),
+      uberUploadDriverVehicleDataUseCase: sl.call()));
 
   sl.registerFactory<DriverLocationController>(
       () => DriverLocationController(driverLocationUseCase: sl.call()));
-
 
   sl.registerFactory<UberProfileController>(() => UberProfileController(
       uberProfileUpdateDriverUsecase: sl.call(),
@@ -92,22 +96,33 @@ Future<void> init() async {
       uberAuthGetUserUidUseCase: sl.call(),
       uberProfileGetRiderProfileUsecase: sl.call()));
 
-  // Use cases
-  sl.registerLazySingleton(() => TripHistoryUseCase(repository: sl.call()));
+  //////////////////////////////////////////////////////////////////
+  ////////////////////// Use Cases /////////////////////////////////
+  //////////////////////////////////////////////////////////////////
+
+  // Location
   sl.registerLazySingleton(() => DriverUpdateUseCase(repository: sl.call()));
   sl.registerLazySingleton(() => DriverLocationUseCase(repository: sl.call()));
-  sl.registerLazySingleton(
-      () => UberGetTripHistoryUsecase(uberTripHistoryRepository: sl.call()));
 
+  // Trip History
+  sl.registerLazySingleton(() => TripHistoryUseCase(repository: sl.call()));
+
+  // Profile
   sl.registerLazySingleton<UberProfileGetDriverProfileUsecase>(() =>
       UberProfileGetDriverProfileUsecase(uberProfileRepository: sl.call()));
+
+  sl.registerLazySingleton<UberUploadDriverVehicleDataUseCase>(() =>
+      UberUploadDriverVehicleDataUseCase(uberProfileRepository: sl.call()));
 
   sl.registerLazySingleton<UberProfileUpdateDriverUsecase>(
       () => UberProfileUpdateDriverUsecase(uberProfileRepository: sl.call()));
 
+  sl.registerLazySingleton<UberAddProfileImgUseCase>(
+      () => UberAddProfileImgUseCase(uberAuthRepository: sl.call()));
+
+  // authentication
   sl.registerLazySingleton<UberAuthIsSignInUseCase>(
       () => UberAuthIsSignInUseCase(uberAuthRepository: sl.call()));
-
   sl.registerLazySingleton<UberAuthPhoneVerificationUseCase>(
       () => UberAuthPhoneVerificationUseCase(uberAuthRepository: sl.call()));
   sl.registerLazySingleton<UberAuthOtpVerificationUseCase>(
@@ -118,16 +133,14 @@ Future<void> init() async {
       () => UberAuthCheckUserStatusUseCase(uberAuthRepository: sl.call()));
   sl.registerLazySingleton<UberAuthSignOutUseCase>(
       () => UberAuthSignOutUseCase(uberAuthRepository: sl.call()));
-  sl.registerLazySingleton<UberAddProfileImgUseCase>(
-      () => UberAddProfileImgUseCase(uberAuthRepository: sl.call()));
 
-// Repository
+  //////////////////////////////////////////////////////////////////
+  ////////////////////// Repositories //////////////////////////////
+  //////////////////////////////////////////////////////////////////
+
   sl.registerLazySingleton<UberAuthRepository>(
       () => UberAuthRepositoryImpl(uberAuthDataSource: sl.call()));
 
-  sl.registerLazySingleton<UberTripHistoryRepository>(
-    () => UberTripHistoryRepositoryImpl(uberTripsHistoryDataSource: sl.call()),
-  );
   sl.registerLazySingleton<TripHistoryRepository>(
     () => TripHistoryRepositoryImpl(firebaseNearByMeDataSource: sl.call()),
   );
@@ -138,15 +151,16 @@ Future<void> init() async {
   sl.registerLazySingleton<UberProfileRepository>(
       () => UberProfileRepositoryImpl(uberProfileDataSource: sl.call()));
 
-  // Data sources
+  //////////////////////////////////////////////////////////////////
+  ////////////////////// Data Sources //////////////////////////////
+  //////////////////////////////////////////////////////////////////
+
   sl.registerLazySingleton<FirebaseDataSource>(
     () => FirebaseDataSourceImpl(),
   );
   sl.registerLazySingleton<Connectivity>(
     () => Connectivity(),
   );
-  sl.registerLazySingleton<UberTripsHistoryDataSource>(
-      () => UberTripsHistoryDataSourceImpl(firestore: sl.call()));
 
   sl.registerLazySingleton<UberAuthDataSource>(() => UberAuthDataSourceImpl(
       firestore: sl.call(), auth: sl.call(), firebaseStorage: sl.call()));
@@ -154,7 +168,10 @@ Future<void> init() async {
   sl.registerLazySingleton<UberProfileDataSource>(
       () => UberProfileDataSourceImpl(firestore: sl.call(), auth: sl.call()));
 
-  //External
+  //////////////////////////////////////////////////////////////////
+  //////////////// External Firebase Dependency ////////////////////
+  //////////////////////////////////////////////////////////////////
+
   final auth = FirebaseAuth.instance;
   final fireStore = FirebaseFirestore.instance;
   final firebaseStorage = FirebaseStorage.instance;

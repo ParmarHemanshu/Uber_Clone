@@ -1,10 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
-import 'package:uber_driver_app/features/uber_auth_feature/data/models/vehicle_model.dart';
-import 'package:uber_driver_app/features/uber_auth_feature/domain/entities/driver_entity.dart';
+import 'package:uber_driver_app/core/internet/internet_cubit.dart';
 import 'package:uber_driver_app/features/uber_auth_feature/domain/use_cases/uber_add_profile_image_usecase.dart';
 import 'package:uber_driver_app/features/uber_auth_feature/domain/use_cases/uber_auth_check_user_status_usecase.dart';
 import 'package:uber_driver_app/features/uber_auth_feature/domain/use_cases/uber_auth_get_user_uid_usecase.dart';
@@ -12,12 +12,15 @@ import 'package:uber_driver_app/features/uber_auth_feature/domain/use_cases/uber
 import 'package:uber_driver_app/features/uber_auth_feature/domain/use_cases/uber_auth_otp_verification_usecase.dart';
 import 'package:uber_driver_app/features/uber_auth_feature/domain/use_cases/uber_auth_phone_verification_usecase.dart';
 import 'package:uber_driver_app/features/uber_auth_feature/presentation/pages/uber_auth_register_page.dart';
+import 'package:uber_driver_app/features/uber_profile_feature/domain/entities/driver_entity.dart';
+import 'package:uber_driver_app/features/uber_profile_feature/domain/entities/vehicle_entity.dart';
 import 'package:uber_driver_app/features/uber_profile_feature/domain/use_cases/uber_profile_update_driver_usecase.dart';
+import 'package:uber_driver_app/features/uber_profile_feature/domain/use_cases/uber_profile_upload_vehicle_data_usecase.dart';
 import 'package:uber_driver_app/features/uber_trip_feature/presentation/cubit/available_for_ride/user_req_cubit.dart';
 import 'package:uber_driver_app/features/uber_trip_feature/presentation/cubit/driver_live_location/driver_location_cubit.dart';
-import 'package:uber_driver_app/features/uber_trip_feature/presentation/cubit/internet/internet_cubit.dart';
-import 'package:uber_driver_app/features/uber_trip_feature/presentation/pages/user_req.dart';
-import 'package:uber_driver_app/features/uber_trips_history_feature/presentation/pages/uber_trips_history_page.dart';
+import 'package:uber_driver_app/features/uber_trip_feature/presentation/cubit/uber_driver_map/uber_map_cubit.dart';
+import 'package:uber_driver_app/features/uber_trip_feature/presentation/pages/home_page.dart';
+
 import '/injection_container.dart' as di;
 
 class UberAuthController extends GetxController {
@@ -28,6 +31,7 @@ class UberAuthController extends GetxController {
   final UberAuthGetUserUidUseCase uberAuthGetUserUidUseCase;
   final UberProfileUpdateDriverUsecase uberProfileUpdateDriverUsecase;
   final UberAddProfileImgUseCase uberAddProfileImgUseCase;
+  final UberUploadDriverVehicleDataUseCase uberUploadDriverVehicleDataUseCase;
   var isSignIn = false.obs;
   var profileImgUrl =
       "https://i.pinimg.com/originals/51/f6/fb/51f6fb256629fc755b8870c801092942.png"
@@ -40,7 +44,8 @@ class UberAuthController extends GetxController {
       required this.uberAuthCheckUserStatusUseCase,
       required this.uberAuthGetUserUidUseCase,
       required this.uberProfileUpdateDriverUsecase,
-      required this.uberAddProfileImgUseCase});
+      required this.uberAddProfileImgUseCase,
+      required this.uberUploadDriverVehicleDataUseCase});
 
   checkIsSignIn() async {
     bool uberAuthIsSignIn = await uberAuthIsSignInUseCase.call();
@@ -59,22 +64,23 @@ class UberAuthController extends GetxController {
       if (driverId.isNotEmpty) {
         final userStatus = await checkUserStatus();
         if (userStatus) {
-          Get.offAll(() => MultiBlocProvider(
-            providers: [
-              BlocProvider<DriverLocationCubit>(
-                create: (BuildContext context) => di.sl<DriverLocationCubit>(),
-              ),
-              BlocProvider<InternetCubit>(
-                create: (BuildContext context) => di.sl<InternetCubit>(),
-              ),
-
-              BlocProvider<UserReqCubit>(
-                create: (BuildContext context) => di.sl<UserReqCubit>(),
-              ),
-
-            ],
-            child:  const UserReq(),
-          ),);
+          Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => BlocProvider<DriverLocationCubit>(
+                  create: (BuildContext context) =>
+                      di.sl<DriverLocationCubit>(),
+                  child: BlocProvider<UserReqCubit>(
+                      create: (BuildContext context) => di.sl<UserReqCubit>(),
+                      child: BlocProvider<UberMapCubit>(
+                        create: (BuildContext context) => di.sl<UberMapCubit>(),
+                        child: BlocProvider<InternetCubit>(
+                          create: (BuildContext context) => di.sl<InternetCubit>(),
+                          child: const HomePage(),
+                        ),
+                      )),
+                ),
+              ));
         } else {
           Get.offAll(() => const UberAuthRegistrationPage());
         }
@@ -94,29 +100,50 @@ class UberAuthController extends GetxController {
     profileImgUrl.value = profileUrl;
   }
 
-  addDriverProfile(String name, String email,String city,int vehicle_type,String company,String model,String number_plate) async {
-    final vehicle=checkVehicleType(vehicle_type);
+  addDriverProfile(String name, String email, String city, int vehicle_type,
+      String company, String model, String number_plate,BuildContext context) async {
+    final vehicle = checkVehicleType(vehicle_type);
     final String driverId = await uberAuthGetUserUidUseCase.call();
-
- final path=  FirebaseFirestore.instance.collection(vehicle).doc(driverId);
+    final path = FirebaseFirestore.instance.collection(vehicle).doc(driverId);
 
     final driverEntity = DriverEntity(
         name: name,
         email: email,
         driver_id: driverId,
-        wallet: 50.0,
+        wallet: 50,
         is_online: true,
         overall_rating: "2",
-        current_location: GeoPoint(27.65, 26.56),
+        current_location: const GeoPoint(27.65, 26.56),
         mobile: FirebaseAuth.instance.currentUser!.phoneNumber,
         profile_img: profileImgUrl.value,
-        total_trips: "0",
-        vehicle: path,city: city);
-
+        vehicle: path,
+        city: city);
+    final vehicleEntity = VehicleEntity(
+        comapany: company,
+        model: model,
+        number_plate: number_plate,
+        color: "unknown");
     await uberProfileUpdateDriverUsecase.call(driverEntity, driverId);
-    path.update(VehicleModel(comapany: company,model: model,number_plate: number_plate,color: "black").toMap());
+    await uberUploadDriverVehicleDataUseCase.call(path, vehicleEntity);
+
     Get.snackbar("Welcome.", "registration successful!");
-    Get.offAll(() => const TripHistory());
+    Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => BlocProvider<DriverLocationCubit>(
+            create: (BuildContext context) =>
+                di.sl<DriverLocationCubit>(),
+            child: BlocProvider<UserReqCubit>(
+                create: (BuildContext context) => di.sl<UserReqCubit>(),
+                child: BlocProvider<UberMapCubit>(
+                  create: (BuildContext context) => di.sl<UberMapCubit>(),
+                  child: BlocProvider<InternetCubit>(
+                    create: (BuildContext context) => di.sl<InternetCubit>(),
+                    child: const HomePage(),
+                  ),
+                )),
+          ),
+        ));
   }
 
   Future<String?> getUidOfCurrentUser() async {
@@ -129,13 +156,11 @@ class UberAuthController extends GetxController {
 }
 
 String checkVehicleType(int vehicle_type) {
-  if(vehicle_type==1){
+  if (vehicle_type == 1) {
     return "bikes";
-  }
-  else if(vehicle_type==2){
+  } else if (vehicle_type == 2) {
     return "auto";
-  }
-  else{
+  } else {
     return "cars";
   }
 }

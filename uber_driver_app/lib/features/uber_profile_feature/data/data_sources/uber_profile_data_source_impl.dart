@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
+import 'package:uber_driver_app/features/uber_profile_feature/data/models/vehicle_model.dart';
 import 'package:uber_driver_app/features/uber_profile_feature/data/data_sources/uber_profile_data_source.dart';
 import 'package:uber_driver_app/features/uber_profile_feature/data/models/uber_profile_driver_model.dart';
 
@@ -31,10 +32,10 @@ class UberProfileDataSourceImpl extends UberProfileDataSource {
   }
 
   @override
-  Future<void> walletAddMoney(String driverId, int avlAmt, int addAmt) async {
-    return await firestore
-        .collection("drivers")
-        .doc(driverId)
-        .update({'wallet': avlAmt + addAmt});
+  Future<void> uberAuthUploadVehicleData(DocumentReference<Object?> path,VehicleModel model) async{
+    await path.set(model.toMap());
   }
+
+
+
 }

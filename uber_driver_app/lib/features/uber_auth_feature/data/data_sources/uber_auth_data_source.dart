@@ -6,4 +6,5 @@ abstract class UberAuthDataSource {
   Future<bool> uberAuthCheckUserStatus(String docId);
   Future<void> uberAuthSignOut();
   Future<String> uberAddProfileImg(String riderId);
+
 }

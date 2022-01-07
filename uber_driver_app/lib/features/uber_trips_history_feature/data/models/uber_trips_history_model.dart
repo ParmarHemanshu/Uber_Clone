@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:uber_driver_app/features/uber_trips_history_feature/domain/entities/uber_trips_history_entity.dart';
+import 'package:uber_driver_app/features/uber_trips_history_feature/domain/entities/trips_history_entity.dart';
 
 class TripHistoryModel extends TripHistoryEntity {
   final String? source;
@@ -11,13 +11,11 @@ class TripHistoryModel extends TripHistoryEntity {
   final String? tripDate;
   final String? tripId;
   final bool? isCompleted;
-  final String? tripAmount;
+  final int? tripAmount;
   final double? rating;
   final DocumentReference? driverId;
   final DocumentReference? riderId;
   final bool? isArrived;
-  final String? vehicleType;
-  final String? driverName;
   final bool? ready_for_trip;
 
   factory TripHistoryModel.fromSnapshot(DocumentSnapshot documentSnapshot) {
@@ -30,15 +28,12 @@ class TripHistoryModel extends TripHistoryEntity {
         travellingTime: documentSnapshot.get('travelling_time'),
         isCompleted: documentSnapshot.get('is_completed'),
         tripDate: documentSnapshot.get('trip_date'),
-        //DateTime.parse(documentSnapshot.get('trip_date')),
         tripId: documentSnapshot.get('trip_id'),
         tripAmount: documentSnapshot.get('trip_amount'),
         rating: documentSnapshot.get('rating'),
         driverId: documentSnapshot.get('driver_id'),
         riderId: documentSnapshot.get('rider_id'),
         isArrived: documentSnapshot.get('is_arrived'),
-        driverName: documentSnapshot.get('driver_name'),
-        vehicleType: documentSnapshot.get('vehicleType'),
         ready_for_trip: documentSnapshot.get('ready_for_trip'));
   }
 
@@ -58,8 +53,7 @@ class TripHistoryModel extends TripHistoryEntity {
       this.driverId,
       required this.riderId,
       required this.isArrived,
-      this.driverName,
-      this.vehicleType})
+     })
       : super();
 
   Map<String, dynamic> toMap() {
@@ -78,8 +72,6 @@ class TripHistoryModel extends TripHistoryEntity {
       'rider_id': riderId,
       'is_arrived': isArrived,
       'ready_for_trip': ready_for_trip,
-      'driver_name': driverName,
-      'vehicleType': vehicleType
     };
   }
 
@@ -95,11 +87,10 @@ class TripHistoryModel extends TripHistoryEntity {
         isArrived: value['is_arrived'],
         tripDate: DateTime.parse(value['trip_date']).toString(),
         tripId: id,
-        tripAmount: value['trip_amount'].toString(),
+        tripAmount: value['trip_amount'],
         rating: double.parse(value['rating'].toString()),
         riderId: value['rider_id'],
         ready_for_trip: value['ready_for_trip'],
-        driverName: value['driver_name'].toString(),
-        vehicleType: value['vehicleType'].toString());
+       );
   }
 }
