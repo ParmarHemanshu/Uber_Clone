@@ -39,6 +39,7 @@ import 'features/uber_trips_history_feature/data/repositories/trip_history_repos
 import 'features/uber_trips_history_feature/domain/repositories/trip_history_repository.dart';
 import 'features/uber_trips_history_feature/domain/use_cases/get_trip_history_usecase.dart';
 
+
 final sl = GetIt.instance;
 
 Future<void> init() async {
