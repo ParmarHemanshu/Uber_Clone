@@ -10,6 +10,7 @@ import 'package:uber_driver_app/features/uber_trip_feature/presentation/cubit/av
 import 'package:uber_driver_app/features/uber_trip_feature/presentation/cubit/driver_live_location/driver_location_cubit.dart';
 import 'package:uber_driver_app/features/uber_trip_feature/presentation/cubit/uber_driver_map/uber_map_cubit.dart';
 import 'package:uber_driver_app/features/uber_trips_history_feature/presentation/cubit/trip_history_cubit.dart';
+
 import 'core/data_sources/remote_data_source/firebase/firebase_data_source.dart';
 import 'core/data_sources/remote_data_source/firebase/firebase_data_source_impl.dart';
 import 'core/internet/internet_cubit.dart';
@@ -38,7 +39,6 @@ import 'features/uber_trip_feature/domain/use_cases/driver_update_usecase.dart';
 import 'features/uber_trips_history_feature/data/repositories/trip_history_repository_impl.dart';
 import 'features/uber_trips_history_feature/domain/repositories/trip_history_repository.dart';
 import 'features/uber_trips_history_feature/domain/use_cases/get_trip_history_usecase.dart';
-
 
 final sl = GetIt.instance;
 

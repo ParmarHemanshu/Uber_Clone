@@ -31,22 +31,33 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     Geolocator.requestPermission();
-    BlocProvider.of<InternetCubit>(context).monitorInternetConnection();
-    BlocProvider.of<DriverLocationCubit>(context).getCurrentLocation(context);
-    BlocProvider.of<DriverLocationCubit>(context).getDriverLocation();
+    try {
+      BlocProvider.of<InternetCubit>(context).monitorInternetConnection();
+      BlocProvider.of<DriverLocationCubit>(context).getCurrentLocation(context);
+      BlocProvider.of<DriverLocationCubit>(context).getDriverLocation();
+    } on Exception catch (e) {
+      print(e);
+    }
   }
 
   @override
   void dispose() {
     super.dispose();
+  try{
     BlocProvider.of<DriverLocationCubit>(context).cancelTimer();
     BlocProvider.of<InternetCubit>(context).close();
+  }catch(e){
+    print(e);
+  }
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<InternetCubit, InternetState>(
       builder: (context, state) {
+         if(state is InternetLoading){
+        return const LoadingWidget();
+        }
         if (state is InternetConnected) {
           return Scaffold(
             bottomNavigationBar:
@@ -97,7 +108,15 @@ class _HomePageState extends State<HomePage> {
                     ),
                   );
                 }
-                return const CircularProgressIndicator();
+                return Center(
+                  child: ElevatedButton(
+                    onPressed: (){
+                      BlocProvider.of<DriverLocationCubit>(context).getCurrentLocation(context);
+                      BlocProvider.of<DriverLocationCubit>(context).getDriverLocation();
+                    },
+                    child: const Text("Retry"),
+                  ),
+                );
               },
             ),
             resizeToAvoidBottomInset: false,
@@ -215,7 +234,17 @@ class _HomePageState extends State<HomePage> {
             message: 'Check Your Internet Connection.',
           );
         }
-        return const LoadingWidget();
+
+        return Center(
+          child: ElevatedButton(
+            onPressed: (){
+              BlocProvider.of<InternetCubit>(context).monitorInternetConnection();
+              BlocProvider.of<DriverLocationCubit>(context).getCurrentLocation(context);
+              BlocProvider.of<DriverLocationCubit>(context).getDriverLocation();
+            },
+            child: const Text("Retry"),
+          ),
+        );
       },
     );
   }

@@ -1,9 +1,12 @@
 import 'dart:async';
 import 'dart:io';
+
 import 'package:bloc/bloc.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:equatable/equatable.dart';
+
 import 'internet_enum.dart';
+
 part 'internet_state.dart';
 
 class InternetCubit extends Cubit<InternetState> {

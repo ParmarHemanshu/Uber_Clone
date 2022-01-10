@@ -1,7 +1,7 @@
 
 import 'package:uber_driver_app/core/usecases/common/usecase.dart';
-import 'package:uber_driver_app/features/uber_trips_history_feature/data/models/driver_model.dart';
 import 'package:uber_driver_app/features/uber_trip_feature/domain/repositories/driver_location_repository.dart';
+import 'package:uber_driver_app/features/uber_trips_history_feature/data/models/driver_model.dart';
 
 class DriverLocationUseCase extends UseCase<DriverModel, Params>{
   final DriverLocationRepository repository;

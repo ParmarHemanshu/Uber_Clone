@@ -59,8 +59,8 @@ class UberAuthDataSourceImpl extends UberAuthDataSource {
   }
 
   @override
-  Future<String> uberAuthGetUserUid() async {
-    return auth.currentUser!.uid;
+  String uberAuthGetUserUid()  {
+    return  auth.currentUser!.uid;
   }
 
   @override

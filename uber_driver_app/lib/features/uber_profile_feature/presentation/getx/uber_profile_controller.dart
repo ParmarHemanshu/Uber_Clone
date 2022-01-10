@@ -1,9 +1,9 @@
 import 'package:get/get.dart';
-import 'package:uber_driver_app/features/uber_profile_feature/domain/entities/driver_entity.dart';
 import 'package:uber_driver_app/features/uber_auth_feature/domain/use_cases/uber_add_profile_image_usecase.dart';
 import 'package:uber_driver_app/features/uber_auth_feature/domain/use_cases/uber_auth_get_user_uid_usecase.dart';
 import 'package:uber_driver_app/features/uber_auth_feature/domain/use_cases/uber_auth_sign_out_usecase.dart';
 import 'package:uber_driver_app/features/uber_auth_feature/presentation/pages/uber_splash_screen.dart';
+import 'package:uber_driver_app/features/uber_profile_feature/domain/entities/driver_entity.dart';
 import 'package:uber_driver_app/features/uber_profile_feature/domain/use_cases/uber_profile_get_driver_usecase.dart';
 import 'package:uber_driver_app/features/uber_profile_feature/domain/use_cases/uber_profile_update_driver_usecase.dart';
 

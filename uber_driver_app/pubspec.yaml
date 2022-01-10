@@ -26,14 +26,13 @@ dependencies:
   get: ^4.6.1
 
   #firebase
-  firebase_auth: ^3.3.4
-  cloud_firestore: ^3.1.5
-  firebase_storage: ^10.2.4
+  firebase_auth: ^3.3.5
+  cloud_firestore: ^3.1.6
+  firebase_storage: ^10.2.5
 
   #map
   google_maps_flutter: ^2.1.1
   geolocator: ^8.0.1
-  geocoding: ^2.0.1
   flutter_polyline_points: ^1.0.0
 
   # dependency injection

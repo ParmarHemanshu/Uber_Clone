@@ -128,7 +128,6 @@ class UserReqCubit extends Cubit<UserReqState> {
                   mobile: tripDriver.riderModel.mobile,
                   name: tripDriver.riderModel.name)),
           DriverModel(
-
             is_online: false,
             driver_id: driverId,
             profile_img: driver.profile_img,

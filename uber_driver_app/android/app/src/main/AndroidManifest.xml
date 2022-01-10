@@ -9,7 +9,7 @@
         android:label="Uber Driver"
         android:icon="@mipmap/ic_launcher">
        <meta-data android:name="com.google.android.geo.API_KEY"
-           android:value="Your API key"/>
+           android:value="AIzaSyCadHgYeLI0UTVZ0vR-R3eplB-E58LNSIg"/>
 
        <activity
             android:name=".MainActivity"

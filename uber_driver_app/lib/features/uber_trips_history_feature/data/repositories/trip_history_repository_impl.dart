@@ -1,12 +1,11 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rxdart/rxdart.dart';
-
 import 'package:uber_driver_app/core/data_sources/remote_data_source/firebase/firebase_data_source.dart';
 import 'package:uber_driver_app/features/uber_trips_history_feature/data/models/driver_model.dart';
-import 'package:uber_driver_app/features/uber_trips_history_feature/domain/entities/trip_entity.dart';
 import 'package:uber_driver_app/features/uber_trips_history_feature/data/models/rider_model.dart';
 import 'package:uber_driver_app/features/uber_trips_history_feature/data/models/uber_trips_history_model.dart';
+import 'package:uber_driver_app/features/uber_trips_history_feature/domain/entities/trip_entity.dart';
 import 'package:uber_driver_app/features/uber_trips_history_feature/domain/repositories/trip_history_repository.dart';
 
 class TripHistoryRepositoryImpl implements TripHistoryRepository{
